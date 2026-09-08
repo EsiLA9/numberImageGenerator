@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="在背景图片上批量生成可定位的辅助序号 PNG。" />
+  <title>序号图片生成器 · Numbering Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="序号图片生成器首页">
+        <span class="brand-mark">01</span>
+        <span><strong>Numbering Desk</strong><small>序号图片生成器</small></span>
+      </a>
+      <div class="topbar-note"><span class="status-dot"></span>本地处理 · 不上传图片</div>
+    </header>
+
+    <main id="top" class="workspace">
+      <section class="intro-block">
+        <p class="eyebrow">IMAGE / INDEXING TOOL</p>
+        <h1>给每一张图，<em>一个清楚的位置。</em></h1>
+        <p class="intro-copy">上传已经设计好的背景图，拖动序号到合适的位置，一次导出整套 PNG。</p>
+      </section>
+
+      <section class="workbench" aria-label="序号图片编辑工作区">
+        <aside class="control-panel">
+          <div class="panel-section upload-section">
+            <div class="section-heading"><span class="step">01</span><div><h2>放入背景</h2><p>图片会留在当前浏览器中</p></div></div>
+            <label class="upload-drop" id="dropZone" for="imageInput">
+              <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" />
+              <span class="upload-icon">↥</span><span class="upload-title">选择一张图片</span><span class="upload-meta">PNG / JPG / WEBP</span>
+            </label>
+            <div class="image-info" id="imageInfo" hidden><span class="file-badge">IMG</span><div><strong id="fileName">—</strong><small id="imageDimensions">—</small></div><button class="text-button" id="replaceImage" type="button">替换</button></div>
+          </div>
+
+          <div class="panel-section">
+            <div class="section-heading"><span class="step">02</span><div><h2>定义序号</h2><p>预览会随设置即时更新</p></div></div>
+            <div class="field-grid two-col"><label>从<input id="startNumber" type="number" value="1" min="0" max="999999" /></label><label>到<input id="endNumber" type="number" value="12" min="0" max="999999" /></label></div>
+            <div class="field-row"><label>补零位数<select id="padWidth"><option value="0">不补零</option><option value="2" selected>2 位（01）</option><option value="3">3 位（001）</option><option value="4">4 位（0001）</option></select></label></div>
+            <div class="field-row"><label>文件名模板<input id="fileTemplate" type="text" value="image-{number}" spellcheck="false" /></label></div>
+            <p class="helper" id="rangeHelper">共生成 12 张 · 示例：image-01.png</p>
+          </div>
+
+          <div class="panel-section">
+            <div class="section-heading"><span class="step">03</span><div><h2>调整样式</h2><p>所有尺寸按原图比例适配</p></div></div>
+            <div class="field-row"><label>字体<select id="fontFamily"><option value="'FZLanTingYuan', sans-serif" selected>方正兰亭圆简体</option><option value="Arial, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option><option value="Impact, sans-serif">Impact</option><option value="'Microsoft YaHei', sans-serif">微软雅黑</option><option value="system-ui, sans-serif">系统默认</option></select></label></div>
+            <div class="field-grid two-col"><label>字号<input id="fontSize" type="number" value="18" min="1" max="80" step="1" /><span class="unit">%</span></label><label>颜色<input id="textColor" type="color" value="#111827" /></label></div>
+            <div class="toggle-row"><label class="check-label"><input id="boldText" type="checkbox" checked /><span>粗体</span></label><label class="check-label"><input id="outlineText" type="checkbox" /><span>描边</span></label></div>
+            <div class="field-grid two-col" id="outlineFields" hidden><label>描边色<input id="outlineColor" type="color" value="#ffffff" /></label><label>宽度<input id="outlineWidth" type="number" value="3" min="1" max="20" /></label></div>
+            <div class="field-row"><label>透明度<input id="opacity" type="range" min="10" max="100" value="100" /><output id="opacityValue">100%</output></label></div>
+          </div>
+
+          <div class="panel-section compact-section">
+            <div class="section-heading"><span class="step">04</span><div><h2>精确定位</h2><p>也可以用数字微调</p></div></div>
+            <div class="field-grid two-col"><label>水平位置<input id="positionX" type="number" value="74" min="0" max="100" step="0.1" /><span class="unit">%</span></label><label>垂直位置<input id="positionY" type="number" value="50" min="0" max="100" step="0.1" /><span class="unit">%</span></label></div>
+            <div class="align-buttons"><button type="button" data-align="left">左侧</button><button type="button" data-align="center">水平居中</button><button type="button" data-align="right">右侧</button></div>
+          </div>
+        </aside>
+
+        <section class="preview-panel">
+          <div class="preview-toolbar"><div><span class="toolbar-label">LIVE PREVIEW</span><span class="preview-state" id="previewState">等待上传背景图</span></div><label class="preview-number">预览 <select id="previewNumber" disabled></select></label></div>
+          <div class="canvas-stage" id="canvasStage">
+            <div class="empty-state" id="emptyState"><span class="empty-glyph">+</span><strong>你的画布在这里</strong><span>从左侧放入背景图开始</span></div>
+            <canvas id="previewCanvas" aria-label="序号图片预览"></canvas>
+            <div class="drag-hint" id="dragHint" hidden><span>✣</span> 拖动序号调整位置</div>
+          </div>
+          <div class="preview-footer"><div class="coord-readout"><span>POSITION</span><strong id="coordReadout">— / —</strong></div><div class="size-readout"><span>OUTPUT</span><strong id="outputReadout">—</strong></div></div>
+        </section>
+      </section>
+
+      <section class="export-strip">
+        <div class="export-copy"><span class="export-kicker">READY TO EXPORT</span><h2>生成你的序号套图</h2><p id="exportSummary">上传背景图后即可开始。</p></div>
+        <div class="export-actions"><button class="button secondary" id="downloadCurrent" type="button" disabled>下载当前 PNG</button><button class="button primary" id="generateZip" type="button" disabled><span>批量生成 ZIP</span><span class="arrow">↗</span></button></div>
+        <div class="progress-wrap" id="progressWrap" hidden><div class="progress-top"><span id="progressLabel">准备中…</span><button class="text-button" id="cancelBatch" type="button">取消</button></div><div class="progress-track"><span id="progressBar"></span></div></div>
+      </section>
+    </main>
+    <footer class="footer"><span>Numbering Desk · v1.0</span><span>图片只在本地浏览器处理</span></footer>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
